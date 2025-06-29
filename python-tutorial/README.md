@@ -3,7 +3,7 @@
 Programming projects will be done in Python 3.8.
 In this tutorial, you will install Python and learn its basics.
 
-Credits: This tutorial is heavily inspired from [CS188 project 0](https://inst.eecs.berkeley.edu/~cs188/su19/project0/) by UC Berkeley.
+Credits: This tutorial is heavily inspired from [CS188 project] by UC Berkeley.
 
 ## Tools
 
@@ -48,7 +48,7 @@ username@computername:foo$ cd ..
 username@computername:~$
 ```
 
-Download **[tutorial_code.zip](https://github.com/glouppe/info8006-introduction-to-ai/raw/master/python-tutorial/tutorial_code.zip)** into a directory and change your terminal to that directory (note: the zip file's name may be slightly different when you download it). Use `unzip` to extract the contents of the zip file:
+Download **[tutorial_code.zip](https://github.com/aofphy/SCI193611_ARTIFICIAL_INTELLIGENCE/tree/main/python-tutorial/tutorial_code.zip)** into a directory and change your terminal to that directory (note: the zip file's name may be slightly different when you download it). Use `unzip` to extract the contents of the zip file:
 
 ```console
 username@computername:python-tutorial$ ls
@@ -85,7 +85,7 @@ Some other useful Unix commands:
 ### Windows basics
 Since you are on Windows, you will use the *Anaconda prompt* that is installed with Miniconda. In this terminal, the commands are different from those of UNIX.
 
-Download **[tutorial_code.zip](https://github.com/glouppe/info8006-introduction-to-ai/raw/master/python-tutorial/tutorial_code.zip)** into a directory of your choice, unzip it using your file explorer and change the current directory of the *Anaconda prompt* to this new directory.
+Download **[tutorial_code.zip](https://github.com/aofphy/SCI193611_ARTIFICIAL_INTELLIGENCE/tree/main/python-tutorial/tutorial_code.zip)** into a directory of your choice, unzip it using your file explorer and change the current directory of the *Anaconda prompt* to this new directory.
 
 You can find several commands to manipulate files and the current directory of your prompt in the following:
 
