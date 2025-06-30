@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Hexapawn Candy RL Simulator (เลือกตัดสีแต่ละกล่อง, รีเซ็ตเฉพาะกล่อง)</title>
+  <style>
+    body { font-family: 'Sarabun', sans-serif; background: #f8fafc; margin: 0; padding: 32px; }
+    .container { max-width: 1200px; margin: auto; }
+    h2 { text-align: center; margin-bottom: 20px; }
+    .boxes { display: flex; flex-wrap: wrap; gap: 18px; justify-content: center; }
+    .box {
+      background: #fff;
+      border-radius: 15px;
+      box-shadow: 0 2px 8px #0002;
+      padding: 13px 13px 9px 13px;
+      width: 170px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+    .arrows { margin: 8px 0 0 0; display: flex; gap: 10px; flex-wrap: wrap;}
+    .arrow { font-size: 22px; font-weight: bold; display: flex; flex-direction: column; align-items: center; }
+    .arrow-label { font-size: 12px; }
+    .remove-btn {
+      background: #dc2626;
+      color: #fff;
+      border: none;
+      border-radius: 5px;
+      font-size: 10px;
+      margin-top: 3px;
+      cursor: pointer;
+      padding: 1px 8px;
+    }
+    .btn {
+      margin-top: 8px;
+      padding: 4px 13px;
+      background: #16a34a;
+      color: #fff;
+      border: none;
+      border-radius: 7px;
+      font-size: 13px;
+      cursor: pointer;
+      transition: background 0.15s;
+    }
+    .btn:disabled { background: #aaa; cursor: not-allowed; }
+    .reset-btn {
+      margin: 0 auto 22px auto; display: block;
+      background: #2563eb;
+    }
+    .reset-box-btn {
+      margin-top: 7px;
+      background: #f59e42;
+      color: #fff;
+      border: none;
+      border-radius: 7px;
+      font-size: 12px;
+      padding: 2px 13px;
+      cursor: pointer;
+      transition: background 0.15s;
+    }
+    .result { margin-top: 4px; min-height: 16px; font-weight: bold; font-size: 13px;}
+    @media (max-width: 700px) { .box { width: 94vw; } }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h2>Hexapawn Candy RL Simulator<br>
+      <span style="font-size:16px;font-weight:normal;">
+        (24 กล่อง, ตัดสีลูกอมอิสระในแต่ละกล่อง, รีเซ็ตเฉพาะกล่องได้)
+      </span>
+    </h2>
+    <button class="btn reset-btn" onclick="resetAll()">Reset ลูกอมทุกกล่อง</button>
+    <div class="boxes" id="boxes"></div>
+  </div>
+  <script>
+    // สีและ emoji
+    const colorToEmoji = {
+      red: '🍬', green: '🍏', blue: '🟦', yellow: '🟡', orange: '🍊', purple: '🍇'
+    };
+    const colorLabelTH = {
+      red: 'แดง', green: 'เขียว', blue: 'น้ำเงิน', yellow: 'เหลือง', orange: 'ส้ม', purple: 'ม่วง'
+    };
+    // สีของลูกศรในแต่ละกล่อง (อิงจาก pdf/ตัวอย่าง)
+    const boxesData = [
+      ['blue','green','red'],         // Box 1
+      ['red','blue'],                // Box 2
+      ['red'],                          // Box 3
+      ['red','blue','green','orange'],                        // Box 4
+      ['red','blue'],               // Box 5
+      ['blue','red','orange'],                // Box 6
+      ['red','blue'],             // Box 7
+      ['red','orange','blue'],                 // Box 8
+      ['red','blue'],              // Box 9
+      ['red','blue','green','orange'],               // Box 10
+      ['red','blue'],             // Box 11
+      ['red','blue'],                     // Box 12
+      ['green','red'],              // Box 13
+      ['green','red','orange'],               // Box 14
+      ['red','green'],             // Box 15
+      ['red','green'],                       // Box 16
+      ['red','green'],             // Box 17
+      ['red','green'],              // Box 18
+      ['green','red'],            // Box 19
+      ['green','red'],             // Box 20
+      ['red','green'],            // Box 21
+      ['green','red'],                     // Box 22
+      ['green','red'],            // Box 23
+      ['red']                      // Box 24
+    ];
+    function initialCandiesOfBox(boxIdx) {
+      return boxesData[boxIdx].map(c => ({
+        color: c,
+        count: 1   // 1 เม็ด/สี
+      }));
+    }
+    function initialCandies() {
+      return boxesData.map((colors, idx) => initialCandiesOfBox(idx));
+    }
+    let allCandies = [];
+    let results = [];
+
+    function render() {
+      const boxes = document.getElementById('boxes');
+      boxes.innerHTML = '';
+      boxesData.forEach((colors, idx) => {
+        const box = document.createElement('div');
+        box.className = 'box';
+        box.innerHTML = `<div style="font-weight:bold; margin-bottom:2px;">กล่องที่ ${idx+1}</div>`;
+        // แสดงลูกอม+ปุ่มตัดสี
+        const arrowsDiv = document.createElement('div');
+        arrowsDiv.className = 'arrows';
+        allCandies[idx].forEach((candy, cidx) => {
+          if (candy.count > 0) {
+            const arr = document.createElement('span');
+            arr.className = 'arrow';
+            arr.innerHTML = `
+              <span style="color:${candy.color}; font-size: 23px;">${colorToEmoji[candy.color]||'🍬'}</span>
+              <span class="arrow-label" style="color:${candy.color}; font-size:12px;">${colorLabelTH[candy.color]}</span>
+              <button class="remove-btn" onclick="removeCandy(${idx},'${candy.color}')" title="ตัดสีนี้ออก">ตัดสีนี้</button>
+            `;
+            arrowsDiv.appendChild(arr);
+          }
+        });
+        box.appendChild(arrowsDiv);
+        // ปุ่มสุ่ม
+        const btn = document.createElement('button');
+        btn.className = 'btn';
+        btn.textContent = 'สุ่มลูกอม';
+        btn.disabled = allCandies[idx].every(c => c.count === 0);
+        btn.onclick = () => pickCandy(idx);
+        box.appendChild(btn);
+        // ปุ่มรีเซ็ตเฉพาะกล่อง
+        const resetBoxBtn = document.createElement('button');
+        resetBoxBtn.className = 'reset-box-btn';
+        resetBoxBtn.textContent = 'รีเซ็ตกล่องนี้';
+        resetBoxBtn.onclick = () => resetBox(idx);
+        box.appendChild(resetBoxBtn);
+        // ผลลัพธ์
+        const result = document.createElement('div');
+        result.className = 'result';
+        result.innerHTML = results[idx]
+          ? `ผลลัพธ์: <span style="color:${results[idx].color}">${colorLabelTH[results[idx].color]||'—'}</span>`
+          : '';
+        box.appendChild(result);
+
+        boxes.appendChild(box);
+      });
+    }
+
+    function pickCandy(idx) {
+      const candies = allCandies[idx];
+      const available = candies.filter(c => c.count > 0);
+      if (available.length === 0) {
+        results[idx] = { color: 'black', label: 'หมดลูกอม' };
+        render();
+        return;
+      }
+      const randIdx = Math.floor(Math.random() * available.length);
+      const picked = available[randIdx];
+      for (let c of candies) {
+        if (c.color === picked.color && c.count > 0) {
+          c.count -= 1;
+          break;
+        }
+      }
+      results[idx] = { color: picked.color, label: colorLabelTH[picked.color] };
+      render();
+    }
+
+    // ตัดสี (set count = 0)
+    function removeCandy(boxIdx, color) {
+      for (let c of allCandies[boxIdx]) {
+        if (c.color === color) {
+          c.count = 0;
+          break;
+        }
+      }
+      results[boxIdx] = '';
+      render();
+    }
+
+    function resetBox(boxIdx) {
+      allCandies[boxIdx] = initialCandiesOfBox(boxIdx);
+      results[boxIdx] = '';
+      render();
+    }
+
+    function resetAll() {
+      allCandies = initialCandies();
+      results = Array(boxesData.length).fill('');
+      render();
+    }
+
+    // ทำให้ removeCandy และ resetBox เรียกใช้ได้ใน html
+    window.removeCandy = removeCandy;
+    window.resetBox = resetBox;
+    // Init
+    resetAll();
+  </script>
+</body>
+</html>
