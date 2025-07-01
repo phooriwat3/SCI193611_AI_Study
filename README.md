@@ -103,3 +103,8 @@ This course material is for educational purposes. The core textbook content belo
 ---
 
 > **Note:** For detailed instructions and the latest updates, refer to the [GitHub Repository](https://github.com/aofphy/SCI193611_ARTIFICIAL_INTELLIGENCE.git).
+
+> **tool:** 
+# HexaPawn random Tools [link](https://script.google.com/macros/s/AKfycbwZbR1ANc-vn_shok9lHtHCWOogzCt8fbsJabfxN0IAkB5QhFY1-8nPxMPzaNa7donrrg/exec)
+
+# HexaPawn gameplay [link](https://script.google.com/macros/s/AKfycbzA75-egsQ1B7hNQA7vaXnQy_IvOtgeVkrtk9KCqRFYk3NU7PXdwcsbR2hVyk1proBwfw/exec)
