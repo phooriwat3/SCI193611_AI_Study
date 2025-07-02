@@ -1,23 +1,23 @@
-# Pacman programming project
+# โปรเจกต์การเขียนโปรแกรม Pacman
 
 <p align="center"><img src="pacman_game.png" width="50%"></p>
 
-The goal of this programming project is to implement intelligent agents for the game of Pacman. The project is divided into three parts:
-- [Project 0](project0): you have to implement a Search agent for eating all the food dots as quickly as possible.
-- [Project 1](project1): you have to implement a Minimax agent for eating all the food dots as quickly as possible, while avoiding the ghost enemies that are chasing you.
-- [Project 2](project2): you have to implement a Bayes filter for tracking all the non-visible ghosts' positions.
+เป้าหมายของโปรเจกต์การเขียนโปรแกรมนี้คือการสร้างตัวแทนอัจฉริยะ (Intelligent Agents) สำหรับเกม Pacman โดยโปรเจกต์จะแบ่งออกเป็นสามส่วน:
+- [โปรเจกต์ที่ 0](project0): คุณต้องสร้างตัวแทนค้นหา (Search Agent) เพื่อกินจุดอาหารทั้งหมดให้เร็วที่สุด
+- [โปรเจกต์ที่ 1](project1): คุณต้องสร้างตัวแทน Minimax เพื่อกินจุดอาหารทั้งหมดให้เร็วที่สุด พร้อมหลีกเลี่ยงผีศัตรูที่กำลังไล่ตามคุณ
+- [โปรเจกต์ที่ 2](project2): คุณต้องสร้าง Bayes Filter เพื่อติดตามตำแหน่งของผีที่มองไม่เห็นทั้งหมด
 
-## Installation
+## การติดตั้ง
 
-> The instructions below have been tested under Windows, Linux and MacOS.
+> คำแนะนำด้านล่างนี้ได้รับการทดสอบใน Windows, Linux และ MacOS
 
-We recommend to install a Python (3) environment using the `conda` package manager. The easiest way is to install [Miniconda](https://docs.conda.io/en/latest/miniconda.html). You also need a code editor that supports Python. If you don't already have one, here are a few you might consider : [Sublime Text](https://www.sublimetext.com/), [VS Code](https://code.visualstudio.com/), [Vim](https://www.vim.org/), ...
+เราแนะนำให้ติดตั้งสภาพแวดล้อม Python (3) โดยใช้ตัวจัดการแพ็กเกจ `conda` วิธีที่ง่ายที่สุดคือการติดตั้ง [Miniconda](https://docs.conda.io/en/latest/miniconda.html) คุณยังต้องมีโปรแกรมแก้ไขโค้ดที่รองรับ Python หากคุณยังไม่มี ลองพิจารณาโปรแกรมเหล่านี้: [Sublime Text](https://www.sublimetext.com/), [VS Code](https://code.visualstudio.com/), [Vim](https://www.vim.org/), ...
 
-Once Miniconda is installed, open the Anaconda prompt (Windows) or a terminal (Linux/MacOS).
+เมื่อติดตั้ง Miniconda เรียบร้อยแล้ว ให้เปิด Anaconda prompt (Windows) หรือ terminal (Linux/MacOS)
 
-### Setup
+### การตั้งค่า
 
-Create a `pacman` environment, activate it and install the dependencies:
+สร้างสภาพแวดล้อม `pacman` เปิดใช้งาน และติดตั้งไลบรารีที่จำเป็น:
 
 ```console
 $ conda create --name pacman python=3.8
@@ -25,56 +25,56 @@ $ conda activate pacman
 $ conda install numpy
 ```
 
-From now, it is assumed that `pacman` is activated.
+จากนี้ไป เราจะสันนิษฐานว่าคุณได้เปิดใช้งาน `pacman` แล้ว
 
-### Usage
+### การใช้งาน
 
-- `--agent`: start the game with a user-specifed Pacman agent
+- `--agent`: เริ่มเกมด้วยตัวแทน Pacman ที่ผู้ใช้กำหนด
     ```console
     $ python run.py --agent humanagent
     ```
 
-- `--ghost`: start the game with a user-specifed Ghost agent (`dumby`, `greedy`, `smarty` or `eastrandy`)
+- `--ghost`: เริ่มเกมด้วยตัวแทนผีที่ผู้ใช้กำหนด (`dumby`, `greedy`, `smarty` หรือ `eastrandy`)
     ```console
     $ python run.py --ghost dumby
     ```
 
-- `--layout`: start the game with a user-specifed maze layout (see `pacman_module/layouts` directory)
+- `--layout`: เริ่มเกมด้วยเลย์เอาต์เขาวงกตที่ผู้ใช้กำหนด (ดูไดเรกทอรี `pacman_module/layouts`)
     ```console
     $ python run.py --layout medium
     ```
 
-- `--nographics`: disable the graphical user interface
+- `--nographics`: ปิดการใช้งานอินเตอร์เฟซผู้ใช้แบบกราฟิก
     ```console
     $ python run.py --agent dfs --nographics
     ```
 
-## Instructions
+## คำแนะนำ
 
-All parts (1 & 2) of the project must be carried out in groups of maximum 3 students. You must keep the same group across all parts. For each part, login to [Gradescope](https://www.gradescope.com/) with your `@student.uliege.be` account and submit the requested deliverables. Don't forget to add other group members for each submission.
+ทุกส่วน (1 และ 2) ของโปรเจกต์ต้องทำเป็นกลุ่มสูงสุด 2 คน คุณต้องใช้กลุ่มเดียวกันตลอดทุกส่วน สำหรับแต่ละส่วน ให้ส่งผ่าน https://forms.gle/EfBqfEUzHTugzctp7 ด้วยบัญชี `google account` ของคุณ และส่งสิ่งที่ขอตามที่กำหนด อย่าลืมเพิ่มสมาชิกกลุ่มอื่นๆ ในการส่งแต่ละครั้ง
 
-We tolerate only **one delay of maximum 24 hours**. For example, if you submit your first part late, no more delay will be allowed for the other part. In case of *more than one delay*, the concerned parts will receive a *0/20* grade.
+เราอนุญาตให้ **ส่งช้าได้เพียงครั้งเดียวสูงสุด 24 ชั่วโมง** เช่น หากคุณส่งส่วนแรกช้า จะไม่อนุญาตให้ส่งช้าอีกในส่วนอื่นๆ ในกรณีที่ *ส่งช้ามากกว่าหนึ่งครั้ง* ส่วนที่เกี่ยวข้องจะได้รับคะแนน *0/20*
 
-## Typical mistakes and bad practices
+## ข้อผิดพลาดทั่วไปและแนวปฏิบัติที่ไม่ดี
 
-We show through this section a list of common mistakes and bad practices that we have observed through past projects. Although this section is non exhaustive and thus is subject to regular updates, we hope that the following list will help you to avoid many pitfalls that can hurt the quality of your project.
+เราแสดงผ่านส่วนนี้รายการข้อผิดพลาดทั่วไปและแนวปฏิบัติที่ไม่ดีที่เราได้สังเกตเห็นจากโปรเจกต์ในอดีต แม้ว่าส่วนนี้จะไม่ครบถ้วนและอาจมีการอัปเดตเป็นประจำ เราหวังว่ารายการต่อไปนี้จะช่วยให้คุณหลีกเลี่ยงข้อผิดพลาดหลายประการที่อาจส่งผลเสียต่อคุณภาพของโปรเจกต์
 
-### Style/Documentation
+### สไตล์/เอกสาร
 
-* Source code is not PEP-8 compliant. Fulfilling the required specifications help to the readability of your source code. PEP-8 guidelines are provided at [Style Guide for Python Code](https://www.python.org/dev/peps/pep-0008/). You can use dedicated [scripts](https://pypi.org/project/pycodestyle/) to check PEP-8 compliance of your source code.
+* โค้ดต้นฉบับไม่เป็นไปตาม PEP-8 การปฏิบัติตามข้อกำหนดที่จำเป็นช่วยให้อ่านโค้ดต้นฉบับของคุณได้ง่ายขึ้น แนวทาง PEP-8 มีให้ที่ [Style Guide for Python Code](https://www.python.org/dev/peps/pep-0008/) คุณสามารถใช้ [สคริปต์](https://pypi.org/project/pycodestyle/) เฉพาะเพื่อตรวจสอบความสอดคล้องกับ PEP-8 ของโค้ดต้นฉบับ
 
-* Function specifications are either wrong or missing. They must be present and they must **formally** describe the function out of ambiguity. Its purpose is to provide an easier-to-understand description of the function than the code itself. An example of a correct specification is provided below :
+* ข้อกำหนดของฟังก์ชันผิดพลาดหรือหายไป ต้องมีและต้อง **อธิบายอย่างเป็นทางการ** ให้ฟังก์ชันชัดเจนไม่คลุมเครือ จุดประสงค์คือให้คำอธิบายฟังก์ชันที่เข้าใจง่ายกว่าโค้ดเอง ตัวอย่างข้อกำหนดที่ถูกต้องแสดงด้านล่าง:
     ```python
     def fibonacci(n):
-        """Computes the n-th member of the Fibonacci sequence.
-        Recursive definition:
-            f(0) = 0, f(1) = 1, f(n) = f(n-1) + f(n-2) for n > 1
+        """คำนวณสมาชิกลำดับที่ n ของลำดับฟีโบนัชชี
+        คำจำกัดความแบบเรียกตัวเอง:
+            f(0) = 0, f(1) = 1, f(n) = f(n-1) + f(n-2) สำหรับ n > 1
 
         Arguments:
-            n: Positive index of the Fibonacci sequence.
+            n: ดัชนีบวกของลำดับฟีโบนัชชี
 
         Returns:
-            The n-th member of the Fibonacci sequence.
+            สมาชิกลำดับที่ n ของลำดับฟีโบนัชชี
         """
 
         if n <= 1:
@@ -83,73 +83,76 @@ We show through this section a list of common mistakes and bad practices that we
         return fibonacci(n-1) + fibonacci(n-2)
     ```
 
-* Variables and functions are not named accordingly to their meanings. A source code in which names are based on target meanings is easier to read and might need less comments to be readable.
+* ตัวแปรและฟังก์ชันไม่ได้ตั้งชื่อตามความหมาย โค้ดต้นฉบับที่มีชื่อตามความหมายเป้าหมายอ่านง่ายกว่าและอาจต้องการคอมเมนต์น้อยกว่าเพื่อให้อ่านได้
 
-* Comments are either uninformative, too verbose or missing. They are important to structure the code and to provide high-level insights on how each part of code interacts with each other, and how the source code is actually behaving (useful for optimization among other benefits). They must contains few words and be straight to the point.
+* คอมเมนต์ไม่มีข้อมูล ยาวเกินไป หรือหายไป คอมเมนต์สำคัญในการจัดโครงสร้างโค้ดและให้ข้อมูลเชิงลึกระดับสูงว่าส่วนต่างๆ ของโค้ดมีปฏิสัมพันธ์กันอย่างไร และว่าโค้ดต้นฉบับทำงานอย่างไรจริงๆ (มีประโยชน์สำหรับการปรับปรุงประสิทธิภาพเป็นต้น) ต้องมีคำน้อยและตรงประเด็น
 
-### Implementation
+### การดำเนินการ
 
-* Incorrect implementation of the algorithms. This is often due to the violation of any specification of the algorithms, or to an incorrect implementation of the problem statement, e.g., a wrong goal test is provided to the algorithm. Be sure to understand the problem statement you need to describe and the algorithms you are required to implement.
-* Over confidence on implementation correctness by testing on a small subset of problem instances. While tests are useful to spot implementation errors, they cannot discard all of them. Even if your implementation "works" on some instances of the problem statement, and even if you are encouraged to do such tests, you need to carefully verify your implementation. This includes 1) the correctness of the inputs given to your algorithms with respect to the problem statement and 2) the fulfilment of the algorithms specifications in your implementation.
-* Inefficiency during execution. Only a few seconds is necessary in the worst case to solve each instance of the problem statement we provide in the projects. While you should first have a working version of your implementation, you should also be careful to limit the computation time below these few seconds.
-* Import and edge-cases errors, e.g. index out of bounds. While a typo in import sections does not jeopardize the implementation correctness - as long as the required files are present -, it is often difficult for the reader to decide if edge-cases error are either typos or part of the incorrect implementation. The safest policy being the latter, we refer to it when evaluating your work.
+* การดำเนินการอัลกอริทึมไม่ถูกต้อง มักเกิดจากการละเมิดข้อกำหนดใดๆ ของอัลกอริทึม หรือการดำเนินการคำชี้แจงปัญหาไม่ถูกต้อง เช่น การทดสอบเป้าหมายที่ผิดให้กับอัลกอริทึม ตรวจสอบให้แน่ใจว่าคุณเข้าใจคำชี้แจงปัญหาที่ต้องอธิบายและอัลกอริทึมที่ต้องดำเนินการ
 
-## FAQ
+* มั่นใจเกินไปในความถูกต้องของการดำเนินการโดยการทดสอบในชุดย่อยเล็กๆ ของอินสแตนซ์ปัญหา แม้ว่าการทดสอบจะมีประโยชน์ในการตรวจหาข้อผิดพลาดในการดำเนินการ แต่ไม่สามารถกำจัดทั้งหมดได้ แม้ว่าการดำเนินการของคุณจะ "ทำงาน" ในอินสแตนซ์บางส่วนของคำชี้แจงปัญหา และแม้ว่าคุณจะได้รับการสนับสนุนให้ทำการทดสอบดังกล่าว คุณต้องตรวจสอบการดำเนินการของคุณอย่างระมัดระวัง ซึ่งรวมถึง 1) ความถูกต้องของข้อมูลนำเข้าที่ให้กับอัลกอริทึมเทียบกับคำชี้แจงปัญหา และ 2) การปฏิบัติตามข้อกำหนดอัลกอริทึมในการดำเนินการของคุณ
 
-### Game score
+* ประสิทธิภาพต่ำระหว่างการดำเนินการ ต้องใช้เวลาเพียงไม่กี่วินาทีในกรณีที่เลวร้ายที่สุดในการแก้ปัญหาแต่ละอินสแตนซ์ที่เราให้ในโปรเจกต์ แม้ว่าคุณควรมีการดำเนินการที่ใช้งานได้ก่อน คุณควรระมัดระวังในการจำกัดเวลาคำนวณให้ต่ำกว่าไม่กี่วินาทีนี้
 
-The score function of the game is computed as follows:
+* ข้อผิดพลาดการนำเข้าและกรณีขอบ เช่น ดัชนีนอกขอบเขต แม้ว่าข้อผิดพลาดการพิมพ์ในส่วนการนำเข้าจะไม่เป็นอันตรายต่อความถูกต้องของการดำเนินการ - ตราบใดที่มีไฟล์ที่จำเป็น - มักจะยากสำหรับผู้อ่านในการตัดสินใจว่าข้อผิดพลาดกรณีขอบเป็นข้อผิดพลาดการพิมพ์หรือเป็นส่วนหนึ่งของการดำเนินการที่ไม่ถูกต้อง นโยบายที่ปลอดภัยที่สุดคือหลังนี้ เราอ้างอิงถึงเมื่อประเมินงานของคุณ
+
+## คำถามที่พบบ่อย
+
+### คะแนนเกม
+
+ฟังก์ชันคะแนนของเกมคำนวณดังนี้:
 
 ```
-score = 10 * #number of eaten food dots
-      - 5 * #number of eaten capsules
-      + 200 * #number of eaten ghost
-      - 1 * #time steps
-      - 500 if losing end
-      + 500 if winning end
+คะแนน = 10 * #จำนวนจุดอาหารที่กิน
+      - 5 * #จำนวนแคปซูลที่กิน
+      + 200 * #จำนวนผีที่กิน
+      - 1 * #จำนวนขั้นตอนเวลา
+      - 500 ถ้าแพ้
+      + 500 ถ้าชนะ
 ```
 
-We ask you to implement an agent that wins the game while maximizing its score.
+เราขอให้คุณสร้างตัวแทนที่ชนะเกมและเพิ่มคะแนนให้สูงสุด
 
-Note that you should ask yourself if this score function satisfies all the properties of the search algorithms you will implement. If not, you are free to modify it as long as the optimal solutions remain the same.
+โปรดทราบว่าคุณควรถามตัวเองว่าฟังก์ชันคะแนนนี้เป็นไปตามคุณสมบัติทั้งหมดของอัลกอริทึมการค้นหาที่คุณจะดำเนินการหรือไม่ หากไม่ คุณสามารถแก้ไขได้ตราบใดที่วิธีแก้ปัญหาที่เหมาะสมที่สุดยังคงเหมือนเดิม
 
 ### API
 
-You must implement your agent as a `PacmanAgent` class, following the template of `pacmanagent.py`.
-The core of your algorithm should be implemented or called within the `get_action` method. This method  receives the current state `s` of the game and should return the action to take.
+คุณต้องสร้างตัวแทนของคุณเป็นคลาส `PacmanAgent` ตามแม่แบบของ `pacmanagent.py`
+หัวใจของอัลกอริทึมควรดำเนินการหรือเรียกภายในเมธอด `get_action` เมธอดนี้รับสถานะปัจจุบัน `s` ของเกมและควรส่งคืนการกระทำที่จะทำ
 
-Useful methods of the state are specified below:
+เมธอดที่มีประโยชน์ของสถานะระบุด้านล่าง:
 
-- `s.generatePacmanSuccessors()`: Returns a list of pairs of successor states and moves given the current state `s` for the pacman agent.
-    * This method **must** be called for any node expansion for pacman agent.
-- `s.generateGhostSuccessors(agentIndex)`: Returns a list of pairs of successor states and moves given the current state `s` for the ghost agent indexed by `agentIndex>0`.
-    * This method **must** be called for any node expansion for ghost agent.
-- `s.getLegalActions(agentIndex)`: Returns a list of legal moves given the state `s` and the agent indexed by `agentIndex`. 0 is always the Pacman agent.
-- `s.getPacmanPosition()`: Returns the Pacman position in a `(x,y)` pair.
-- `s.getScore()`: Returns the total score of a state (as defined above).
-- `s.getFood()`: Returns a boolean matrix which gives the position of all food dots.
-- `s.getNumFood()`: Returns a scalar which gives the number of food dots remaining.
-- `s.getWalls()`: Returns a boolean matrix which gives the position of all walls.
-- `s.getGhostPosition(agentIndex)`: Returns the position of the ghost agent indexed by `agentIndex>0`.
-- `s.getGhostDirection(agentIndex)`: Returns the direction of the ghost agent indexed by `agentIndex>0`.
-- `s.getCapsules()`: Returns a list of positions of the remaining capsules in the maze.
-- `s.isWin()`: Returns `True` if the state is in a *winning end*.
-- `s.isLose()`: Returns `True` if the state is in a *losing end*.
+- `s.generatePacmanSuccessors()`: ส่งคืนรายการคู่ของสถานะตัวสำเร็จและการเคลื่อนไหวจากสถานะปัจจุบัน `s` สำหรับตัวแทน pacman
+    * เมธอดนี้ **ต้อง** ถูกเรียกสำหรับการขยายโหนดใดๆ สำหรับตัวแทน pacman
+- `s.generateGhostSuccessors(agentIndex)`: ส่งคืนรายการคู่ของสถานะตัวสำเร็จและการเคลื่อนไหวจากสถานะปัจจุบัน `s` สำหรับตัวแทนผีที่จัดดัชนีโดย `agentIndex>0`
+    * เมธอดนี้ **ต้อง** ถูกเรียกสำหรับการขยายโหนดใดๆ สำหรับตัวแทนผี
+- `s.getLegalActions(agentIndex)`: ส่งคืนรายการการเคลื่อนไหวที่ถูกกฎหมายจากสถานะ `s` และตัวแทนที่จัดดัชนีโดย `agentIndex` 0 คือตัวแทน Pacman เสมอ
+- `s.getPacmanPosition()`: ส่งคืนตำแหน่ง Pacman ในคู่ `(x,y)`
+- `s.getScore()`: ส่งคืนคะแนนรวมของสถานะ (ตามที่นิยามด้านบน)
+- `s.getFood()`: ส่งคืนเมทริกซ์บูลีนที่ให้ตำแหน่งของจุดอาหารทั้งหมด
+- `s.getNumFood()`: ส่งคืนสเกลาร์ที่ให้จำนวนจุดอาหารที่เหลือ
+- `s.getWalls()`: ส่งคืนเมทริกซ์บูลีนที่ให้ตำแหน่งของกำแพงทั้งหมด
+- `s.getGhostPosition(agentIndex)`: ส่งคืนตำแหน่งของตัวแทนผีที่จัดดัชนีโดย `agentIndex>0`
+- `s.getGhostDirection(agentIndex)`: ส่งคืนทิศทางของตัวแทนผีที่จัดดัชนีโดย `agentIndex>0`
+- `s.getCapsules()`: ส่งคืนรายการตำแหน่งของแคปซูลที่เหลือในเขาวงกต
+- `s.isWin()`: ส่งคืน `True` หากสถานะอยู่ใน *การจบแบบชนะ*
+- `s.isLose()`: ส่งคืน `True` หากสถานะอยู่ใน *การจบแบบแพ้*
 
-Implementation examples are provided in `humanagent.py` and `randomagent.py`.
+ตัวอย่างการดำเนินการให้ใน `humanagent.py` และ `randomagent.py`
 
-### Illegal moves
+### การเคลื่อนไหวที่ผิดกฎหมาย
 
-You need to ensure that your agent always returns a legal move. If it is not the case, the previous move is repeated if it is still legal. Otherwise, it remains in the same location.
+คุณต้องตรวจสอบให้แน่ใจว่าตัวแทนของคุณส่งคืนการเคลื่อนไหวที่ถูกกฎหมายเสมอ หากไม่เป็นเช่นนั้น การเคลื่อนไหวก่อนหน้าจะถูกทำซ้ำหากยังถูกกฎหมาย มิฉะนั้น จะอยู่ในตำแหน่งเดิม
 
-### Questions about the projects
+### คำถามเกี่ยวกับโปรเจกต์
 
-The purpose of the projects is to give you an opportunity to have a practical approach of the core concepts of the course. However, you might be stuck during your work progression. Although we are glad to help you to figure out how to solve your various issues, the relevance of our guidance strongly relies on the specificity of your questions, which implies that you have at least tried to solve your issues by referring to the lectures.
+จุดประสงค์ของโปรเจกต์คือให้คุณมีโอกาสได้วิธีการปฏิบัติของแนวคิดหลักของหลักสูตร อย่างไรก็ตาม คุณอาจติดขัดระหว่างการทำงาน แม้ว่าเราจะยินดีช่วยคุณหาทางแก้ไขปัญหาต่างๆ ความเกี่ยวข้องของคำแนะนำของเราขึ้นอยู่กับความเฉพาะเจาะจงของคำถามของคุณ ซึ่งหมายความว่าคุณได้ลองแก้ปัญหาอย่างน้อยโดยอ้างอิงถึงการบรรยาย
 
-You may send your questions at **info8006@montefiore.ulg.ac.be**. You may also meet us at our office on Wednesday 12PM-2PM (Arnaud Delaunoy, R.103).
+คุณอาจส่งคำถามไปที่ **ittipon@g.sut.ac.th** topic " project0" คุณยังสามารถพบเราที่สำนักงานในวันพุธ 12:00-14:00 น. (Arnaud Delaunoy, R.103)
 
-If none of these time slots suits you, feel free to send an email in order to fix an appointment. When you send your email, make sure to already suggest a few time slots. These can be outside the duty periods mentioned above. Do not wait a couple of days before the **hard** deadline to start your project and/or ask your questions. Be also aware that we cannot guarantee to answer your questions outside office hours.
+หากช่วงเวลาเหล่านี้ไม่เหมาะกับคุณ ส่งอีเมลเพื่อนัดหมาย เมื่อส่งอีเมล ให้แน่ใจว่าได้เสนอช่วงเวลาไม่กี่ช่วงแล้ว เวลาเหล่านี้อาจอยู่นอกช่วงงานที่กล่าวข้างต้น อย่ารอสองสามวันก่อนกำหนด**สุดท้าย**เพื่อเริ่มโปรเจกต์และ/หรือถามคำถาม และควรตระหนักว่าเราไม่สามารถรับประกันการตอบคำถามนอกเวลาทำงาน
 
-## Credits
+## เครดิต
 
-The programming projects are adapted from [CS188 (UC Berkeley)](http://ai.berkeley.edu/project_overview.html).
+โปรเจกต์การเขียนโปรแกรมดัดแปลงมาจาก [CS188 (UC Berkeley)]
