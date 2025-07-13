@@ -1,6 +1,6 @@
 
 
-# `aima-python` [![Build Status](https://travis-ci.org/aimacode/aima-python.svg?branch=master)](https://travis-ci.org/aimacode/aima-python) [![Binder](http://mybinder.org/badge.svg)](http://mybinder.org/repo/aimacode/aima-python)
+
 
 
 Python code for the book *[Artificial Intelligence: A Modern Approach](http://aima.cs.berkeley.edu).* You can use this in conjunction with a course on AI, or for study on your own. We're looking for [solid contributors](https://github.com/aimacode/aima-python/blob/master/CONTRIBUTING.md) to help.
@@ -42,7 +42,7 @@ Features from Python 3.6 and 3.7 that we will be using for this version of the c
 
 To download the repository:
 
-`git clone https://github.com/aimacode/aima-python.git`
+`git clone https://github.com/aofphy/SCI193611_ARTIFICIAL_INTELLIGENCE/tree/main/aima`
 
 Then you need to install the basic dependencies to run the project on your system:
 
@@ -51,7 +51,7 @@ cd aima-python
 pip install -r requirements.txt
 ```
 
-You also need to fetch the datasets from the [`aima-data`](https://github.com/aimacode/aima-data) repository:
+You also need to fetch the datasets from the [`aima-data`](https://github.com/aofphy/SCI193611_ARTIFICIAL_INTELLIGENCE/tree/main/aima/aima-data) repository:
 
 ```
 git submodule init
