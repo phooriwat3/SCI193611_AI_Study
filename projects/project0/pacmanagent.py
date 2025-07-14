@@ -1,20 +1,29 @@
-from pacman_module.game import Agent, Directions
+# Complete this class for all parts of the project
+
+from pacman_module.game import Agent
+from pacman_module.pacman import Directions
 
 
 class PacmanAgent(Agent):
-    """Empty Pacman agent."""
-
-    def __init__(self):
-        super().__init__()
+    def __init__(self, args):
+        """
+        Arguments:
+        ----------
+        - `args`: Namespace of arguments from command-line prompt.
+        """
+        self.args = args
 
     def get_action(self, state):
-        """Given a Pacman game state, returns a legal move.
+        """
+        Given a pacman game state, returns a legal move.
 
         Arguments:
-            state: a game state. See API or class `pacman.GameState`.
+        ----------
+        - `state`: the current game state. See FAQ and class
+                   `pacman.GameState`.
 
-        Returns:
-            A legal move as defined in `game.Directions`.
+        Return:
+        -------
+        - A legal move as defined in `game.Directions`.
         """
-
         return Directions.STOP
