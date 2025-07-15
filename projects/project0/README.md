@@ -12,7 +12,7 @@ You can download the [archive](../project0.zip?raw=true) of the project into a d
 
 To help you, we provide an implementation of the DFS algorithm in the `dfs.py` file. However, the `key` function is not finished. Once you have activated your Pacman environment (see [installation](..#installation)), you can test the DFS algorithm using the following commands:
 ```console
-$ python run.py --agent dfs --layout medium
+$ python run.py --agentfile dfs.py  --layout medium
 ```
 If you want to test one of your implementation, just replace the script parameter `dfs` by the name (without the extension) of the agent file you want to test. Refer to the [usage section](..#usage) for more details about the options.
 
@@ -52,7 +52,7 @@ Each of your agents will be evaluated against new mazes, some being designed to 
 คุณสามารถทดสอบอัลกอริทึม DFS ได้ด้วยคำสั่งต่อไปนี้:
 
 ```console
-$ python run.py --agent dfs --layout medium
+$ python run.py --agentfile dfs.py --layout medium
 
 **การประเมินผล (Evaluation)**
 
