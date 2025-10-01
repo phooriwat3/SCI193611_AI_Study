@@ -21,7 +21,7 @@ def assignment_1_basic():
     agent = SimpleQLearning(
         n_states=16,
         n_actions=4,
-        learning_rate=0.1,
+        learning_rate=0.01,
         discount=0.9,
         epsilon=0.1
     )
@@ -51,9 +51,14 @@ def assignment_1_basic():
     print("1. อธิบายทำไม Q-value ของ state ที่ใกล้ goal มีค่าสูงกว่า")
     print("2. ทำไม epsilon-greedy policy สำคัญในการเรียนรู้")
     print("3. ลองเปลี่ยน learning rate เป็น 0.01 และ 0.5 แล้วเปรียบเทียบผล")
-
+    print("-"*20)
+    print("1. Ans: เพราะรางวัลจาก goal จะถูกส่งย้อนกลับมายัง state ก่อนหน้า ทำให้ state ที่อยู่ใกล้ goal มีค่าสูงตามไปด้วย เช่น state 8 คือ goal เเละ agents กำลังอยู่ state 7 มันจะตัดสินใจว่าถ้าเดินไป sate 8 จะได้รับ goal ดังนั้นค่า Q-value ของ sate 7 จึงสูงขึ้น")
+    print("2. Ans: เพื่อสร้างสมดุลระหว่าง การใช้ทางที่ดีที่สุดที่รู้ (Exploit) กับ การลองเส้นทางใหม่ๆ (Explore) ป้องกันไม่ให้ agent ติดอยู่กับเส้นทางที่ไม่ดีที่สุด")
+    print("3. Ans: Learning Rate = 0.01 จะเชื่อข้อมูลเก่ามากกว่าข้อมูลใหม่ที่เพิ่งเจอ ทำให้ Q-table เปลี่ยนแปลงทีละน้อย  Agent ยังหาทางไปถึง goal ได้ไม่ดีนัก ได้ reward ต่ำ\n        Learning Rate = 0.5 Agent ให้น้ำหนักกับข้อมูลใหม่มากๆ ทำให้ Q-table เปลี่ยนแปลงอย่างรวดเร็ว แต่ผลลัพธ์ที่ได้อาจไม่สม่ำเสมอ หรืออาจจะได้ค่า reward ที่ไม่สูงที่สุด เพราะการอัปเดตที่รุนแรงเกินไป")
+    
 def assignment_2_parameter_study():
-    """
+    """1
+    
     Assignment 2: Parameter Study
     ศึกษาผลของพารามิเตอร์ต่างๆ ต่อการเรียนรู้
     """
@@ -83,6 +88,10 @@ def assignment_2_parameter_study():
     print("1. Learning rate ไหนให้ผลดีที่สุด? ทำไม?")
     print("2. ลองทดลองกับ epsilon values: 0.01, 0.1, 0.3, 0.7")
     print("3. ลองทดลองกับ discount factor: 0.5, 0.7, 0.9, 0.99")
+    print("-"*20)
+    print("1. Ans: ประมาณ 0.1 ถึง 0.3 เพราะสมดุล ไม่ช้าและไม่เร็วเกินไป")
+    print("2. Ans: Epsilon น้อยไป: ไม่กล้าลองทางใหม่ อาจติดอยู่กับเส้นทางที่ไม่ดี\n        Epsilon มากไป: เดินสุ่มมั่วเกินไป ทำให้เรียนรู้ช้า")
+    print("3. Ans: Gamma สูง (0.9, 0.99): เหมาะกับปัญหานี้ เพราะทำให้ Agent มองการณ์ไกล ไปถึงรางวัลที่ Goal")
 
 def assignment_3_environment_design():
     """
@@ -94,14 +103,14 @@ def assignment_3_environment_design():
     
     # TODO: ให้นักเรียนสร้าง environment ใหม่
     # ตัวอย่าง: Grid World ขนาดใหญ่กว่า หรือมีอุปสรรคมากกว่า
-    
+        
     class CustomGridWorld(SimpleGridWorld):
         def __init__(self):
             super().__init__(size=5)
             # เพิ่มอุปสรรคใหม่
-            self.obstacles = [(1, 1), (1, 2), (2, 1), (3, 3)]
+            self.obstacles = [(2, 1), (2, 2), (2, 3), (2, 4)] #  เพิ่มกำแพงตรงกลางบังคับให้ Agent ต้องเดินอ้อม
             # เปลี่ยน reward structure
-            self.goal_reward = 20
+            self.goal_reward = 50 # เพิ่มรางวัล goal ให้สูงขึ้น
             self.obstacle_penalty = -10
     
     env = CustomGridWorld()
@@ -109,7 +118,7 @@ def assignment_3_environment_design():
     env.print_grid()
     
     agent = SimpleQLearning(
-        n_states=25,
+        n_states=36, # ขนาด: 6x6
         n_actions=4,
         learning_rate=0.1,
         discount=0.9,
@@ -124,6 +133,11 @@ def assignment_3_environment_design():
     print("1. ออกแบบ Grid World ของคุณเอง (ขนาด, อุปสรรค, rewards)")
     print("2. เปรียบเทียบผลการเรียนรู้กับ standard environment")
     print("3. วิเคราะห์ว่า environment design ส่งผลต่อ learning อย่างไร")
+    print("-"*20)
+    print("1. Ans: ขนาด: 6x6, อุปสรรค: เพิ่มกำแพงตรงกลาง, rewards: 50")
+    print("2. Ans: world ใหญ่ขึ้น, อุปสรรคเยอะขึ้น  Agent เรียนรู้ได้ช้าลง และต้องใช้จำนวน episodes ในการฝึกมากกว่าเดิม")
+    print("3. Ans: Grid World ใหญ่ จำนวน states ก็จะยิ่งเพิ่มขึ้น ทำให้ Q-table ใหญ่ตามไปด้วย Agent ต้องใช้เวลาสำรวจนานขึ้นมากกว่าจะเก็บข้อมูลได้ครบถ้วน")
+
 
 def assignment_4_advanced():
     """
@@ -142,7 +156,24 @@ def assignment_4_advanced():
     print("4. Add experience replay")
     print("5. Create multi-goal environment")
     print("6. Implement priority sweeping")
-    
+    """class DoubleQLearning(SimpleQLearning):
+if v > best:
+best, b_star = v, a
+target = reward + (0.0 if done else self.gamma * self.q_a[next_state][b_star])
+td = target - self.q_b[state][action]
+self.q_b[state][action] += self.lr * td
+
+
+state = next_state
+if done:
+break
+episode_rewards.append(total)
+# สร้าง q_table รวมเพื่อความเข้ากันได้ตอน test()
+self.q_table = [[self.q_a[s][a] + self.q_b[s][a] for a in range(self.n_actions)]
+for s in range(self.n_states)]
+return episode_rewards if return_rewards else None
+
+    """
     print("\nExample: Simple SARSA Implementation")
     
     class SARSAAgent(SimpleQLearning):
@@ -183,7 +214,66 @@ def bonus_visualization():
     # TODO: ใช้ matplotlib สร้างกราฟ learning curve
     # TODO: สร้าง animation ของการเรียนรู้
     # TODO: แสดง heatmap ของ Q-values
-    
+    """ try:
+import matplotlib.pyplot as plt
+import numpy as np
+has_mpl = True
+except Exception:
+has_mpl = False
+
+
+# สร้าง/ฝึกโมเดลสั้น ๆ เพื่อดึง Q-table มาแสดง
+env = SimpleGridWorld(size=5)
+agent = SimpleQLearning(n_states=25, n_actions=4, learning_rate=0.1, discount=0.9, epsilon=0.2)
+rewards = agent.train(env, episodes=400) # ถ้า train() ไม่คืน rewards ก็จะเป็น None
+
+
+# 1) Learning curve
+if has_mpl and rewards is not None:
+plt.figure(figsize=(9, 4))
+plt.plot(rewards)
+plt.title('Learning Curve (Total Reward per Episode)')
+plt.xlabel('Episode')
+plt.ylabel('Total Reward')
+plt.grid(True)
+plt.tight_layout()
+try:
+plt.show()
+except Exception:
+print("(แสดงกราฟไม่สำเร็จบนสภาพแวดล้อมนี้)")
+else:
+print("(ไม่มี matplotlib หรือ train() ไม่คืน rewards — ข้ามกราฟ learning curve)")
+
+
+# 2) Heatmap ของค่า V(s) = max_a Q(s,a)
+q = agent.q_table
+v = [max(row) for row in q]
+size = int(math.sqrt(len(v)))
+if has_mpl:
+data = [[v[r*size+c] for c in range(size)] for r in range(size)]
+plt.figure(figsize=(4.5, 4))
+plt.imshow(data, interpolation='nearest')
+plt.title('State Value Heatmap (max Q)')
+plt.colorbar(label='Value')
+plt.xticks(range(size))
+plt.yticks(range(size))
+plt.tight_layout()
+try:
+plt.show()
+except Exception:
+print("(แสดง heatmap ไม่สำเร็จบนสภาพแวดล้อมนี้)")
+else:
+print("ASCII Heatmap (approx.):")
+chars = " .:-=+*#%@"
+mx, mn = max(v), min(v)
+span = (mx - mn) if mx != mn else 1.0
+for r in range(size):
+row = ''
+for c in range(size):
+val = v[r*size+c]
+idx = int((val - mn) / span * (len(chars) - 1))
+row += chars[idx]
+print(row)"""
     print("Ideas for enhanced visualization:")
     print("1. Plot learning curves with matplotlib")
     print("2. Create heatmap of Q-values")

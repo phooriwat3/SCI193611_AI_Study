@@ -4,7 +4,7 @@ from pacman_module.game import Agent
 import numpy as np
 from pacman_module import util
 from scipy.stats import binom
-
+import math
 
 class BeliefStateAgent(Agent):
     def __init__(self, args):
@@ -19,7 +19,7 @@ class BeliefStateAgent(Agent):
             Variables to use in 'update_belief_state' method.
             Initialization occurs in 'get_action' method.
 
-            XXX: DO NOT MODIFY THE DEFINITION OF THESE VARIABLES
+            XXX: DO NOT MODIFY THE DEFINITION OF THESE VARIABLES  
             # Doing so will result in a 0 grade.
         """
 
@@ -30,14 +30,39 @@ class BeliefStateAgent(Agent):
         self.walls = None
 
         # Hyper-parameters
-        self.ghost_type = self.args.ghostagent
-        self.sensor_variance = self.args.sensorvariance
-
+        self.ghost_type = self.args.ghostagent           # ประเภทผี: scared/afraid/confused
+        self.sensor_variance = self.args.sensorvariance  # ความแปรปรวนของเซนเซอร์
+        
+        # โมเดลสัญญาณรบกวนเป็น Binomial(n, p) โดย p=0.5 และเราชิฟต์ให้อยู่รอบศูนย์
         self.p = 0.5
+        # เลือก n ให้สอดคล้องกับ variance ของ Binomial: Var = n p (1-p) = n * 0.5 * 0.5
+        # => n = variance / (p*(1-p))
         self.n = int(self.sensor_variance/(self.p*(1-self.p)))
 
         # XXX: Your code here
-        # NB: Adding code here is not necessarily useful, but you may.
+    def _shape(self):
+        # ขนาดกระดาน (กว้าง, สูง)
+        return self.walls.width, self.walls.height
+
+    def _is_legal(self, x, y):
+        # ช่อง (x,y) เดินได้หรือไม่ (อยู่นอกเขตหรือเป็นกำแพง = false)
+        if x < 0 or x >= self.walls.width or y < 0 or y >= self.walls.height:
+            return False
+        return not self.walls[x][y]
+
+    def _legal_neighbors(self, x, y):
+        # เพื่อนบ้าน 4 ทิศ (Von Neumann) ที่ "เดินได้"
+        cand = [(x + 1, y), (x - 1, y), (x, y + 1), (x, y - 1)]
+        return [(nx, ny) for (nx, ny) in cand if self._is_legal(nx, ny)]
+
+    def _normalize_matrix(self, matrix):
+        # ทำให้ผลรวมของความน่าจะเป็น = 1 (ถ้าทั้งหมดเป็น 0 ให้กระจายเท่ากันทุกช่อง)
+        s = matrix.sum()
+        if s > 0.0:
+            matrix /= s
+        else:
+            matrix[:] = 1.0 / matrix.size
+        return matrix
         # XXX: End of your code
 
 
@@ -56,9 +81,31 @@ class BeliefStateAgent(Agent):
         The element at position (w, h) is the probability
         P(E_t=evidence | X_t=(w, h))
         """
-        pass
+        W, H = self._shape()
+        likelihood = np.zeros((W, H), dtype=float)
+        z = evidence        # ค่าที่เซนเซอร์วัดได้ (มี noise)
+        n = self.n
+        p = self.p
+        np_half = n * p     # = n*0.5 (ค่าเฉลี่ยของ Binomial)
+        px, py = pacman_position
 
-    def _get_transition_model(self, pacman_position):
+        for x in range(W):
+            for y in range(H):
+                if not self._is_legal(x, y):
+                    continue
+                # ระยะจริงแบบแมนฮัตตันจากตำแหน่งผู้สมัคร (x,y) ไปยังแพคแมน
+                d = util.manhattanDistance((x, y), (px, py))
+                k_real = z - d + np_half
+                # k คือค่าที่ต้องได้จากตัวแปรสุ่ม Binomial (หลังชิฟต์กลับ)
+                k = int(round(k_real))
+                # ต้องเป็นจำนวนเต็มในช่วง [0, n] เท่านั้นจึงมีความน่าจะเป็น > 0
+                if 0 <= k <= n and abs(k - k_real) < 1e-9:
+                    likelihood[x, y] = binom.pmf(k, n, p)
+                else:
+                    likelihood[x, y] = 0.0
+        return likelihood
+
+    def _get_transition_model(self, pacman_position, prev_pos):
         """
         Arguments:
         ----------
@@ -73,7 +120,50 @@ class BeliefStateAgent(Agent):
         The element at position (w1, h1, w2, h2) is the probability
         P(X_t+1=(w1, h1) | X_t=(w2, h2))
         """
-        pass
+        W, H = self._shape()
+        T_next = np.zeros((W, H), dtype=float)
+    
+
+        x0, y0 = prev_pos
+        if not self._is_legal(x0, y0):
+            return T_next  # จุดเดิมผิดกฎ
+
+        # คำนวณ alpha แบบ local (ไม่แตะ __init__)
+        gt = self.ghost_type if hasattr(self, "ghost_type") else "confused"
+        alpha = 2.0 if gt == "scared" else 1.0 if gt == "afraid" else 0.0
+
+        px, py = pacman_position
+        # ระยะปัจจุบันจากจุดเดิมไปยังแพคแมน
+        cur_d = abs(x0 - px) + abs(y0 - py)
+        
+         # เพื่อนบ้านที่เดินได้จากจุดเดิม
+        nbrs = self._legal_neighbors(x0, y0)
+        if not nbrs:
+            # ถ้าไม่มีทางไป ให้คงอยู่ที่เดิม
+            T_next[x0, y0] = 1.0
+            return T_next
+
+        # คะแนน softmax: exp(alpha * Δ) โดย Δ = dist(next,P) - dist(cur,P)
+        scores = []
+        for (x1, y1) in nbrs:
+            delta = (abs(x1 - px) + abs(y1 - py)) - cur_d   # Δ = dist(next) - dist(cur)
+            scores.append(math.exp(alpha * delta))
+
+        total = sum(scores)
+        if total <= 0.0:
+            # safety: ถ้าทั้งหมดเป็น 0 แบ่งเท่ากัน
+            prob = 1.0 / len(nbrs)
+            for (x1, y1) in nbrs:
+                T_next[x1, y1] = prob
+        else:
+            # eps=0.0 (ตั้งค่าได้ถ้าต้องการให้กระจายขึ้นเล็กน้อย)
+            eps = 0.0
+            for j, (x1, y1) in enumerate(nbrs):
+                base = scores[j] / total
+                prob = (1 - eps) * base + eps * (1.0 / len(nbrs))
+                T_next[x1, y1] = prob
+
+        return T_next
 
     def _get_updated_belief(self, belief, evidences, pacman_position,
             ghosts_eaten):
@@ -109,10 +199,43 @@ class BeliefStateAgent(Agent):
         """
 
         # XXX: Your code here
+        W, H = self._shape()
+        Z = len(belief)        # จำนวนผี
+        new_belief_states = []
+
+        for i in range(Z):
+            # ถ้าผีตัวนี้โดนกินแล้ว ให้คืนเมทริกซ์ศูนย์
+            if ghosts_eaten[i]:
+                new_belief_states.append(np.zeros((W, H), dtype=float))
+                continue
+
+            # === 1. Prediction Step ===
+            prior_belief = belief[i]
+            predicted_belief = np.zeros((W, H), dtype=float)
+
+             # สำหรับตำแหน่งก่อนหน้าแต่ละจุด (ที่มีความน่าจะเป็น > 0)
+            for x0 in range(W):
+                for y0 in range(H):
+                    if prior_belief[x0, y0] > 0:
+                         # คำนวณทรานซิชันจากจุด (x0,y0) ไปทุกเพื่อนบ้าน (2D)
+                        transition = self._get_transition_model(
+                            pacman_position, (x0, y0)
+                        )
+                        # กระจายมวล prior ไปยังปลายทาง
+                        predicted_belief += prior_belief[x0, y0] * transition
+
+            # === 2) Update step ===
+            # คูณด้วย likelihood จากเซนเซอร์ของเฟรมปัจจุบัน
+            likelihood = self._get_sensor_model(pacman_position, evidences[i])
+            posterior_belief = predicted_belief * likelihood
+
+             # === 3) Normalize ===
+            self._normalize_matrix(posterior_belief)
+            new_belief_states.append(posterior_belief)
+
+        return new_belief_states
 
         # XXX: End of your code
-
-        return belief
 
     def update_belief_state(self, evidences, pacman_position, ghosts_eaten):
         """

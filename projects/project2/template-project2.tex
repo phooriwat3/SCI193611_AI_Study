@@ -20,17 +20,51 @@
 
 \title{\Large{INFO8006: Project 2 - Report}}
 \vspace{1cm}
-\author{\small{\bf Mr Pacman - s111111} \\ \small{\bf Miss Pacman - s222222}}
+\author{\small{\bf Mr Phooriwat Pungpech - B6638467}}
 
 \maketitle
 
 % ==============================================================================
 
-\section{Bayes filter}
+\section{Bayes filter}  
 
 \begin{enumerate}[label=\alph*.,leftmargin=*]
-    \item
-    \item
+    \item \textbf{Sensor model.}
+    Let $X_t=(x,y)$ denote the ghost cell at time $t$ and $p_t$ the Pacman position.
+    The true distance is the Manhattan norm $d(x,y)=\| (x,y)-p_t \|_1$.
+    The rusty sensor outputs
+    \[
+      E_t \;=\; d(x,y) \;+\; (K - n p),
+    \]
+    where $K \sim \mathrm{Binomial}(n,p)$ with $p=\tfrac{1}{2}$ and $n$ chosen such that $n\,p(1-p)=\sigma^2_{\text{sensor}}$ (the given variance).
+    Therefore, for any observation $z$,
+    \[
+      \Pr(E_t=z \mid X_t=(x,y))
+      \;=\;
+      \begin{cases}
+        \mathrm{BinomPMF}(k;n,p), & \text{if } k=z-d(x,y)+np \in \{0,\dots,n\}\cap\mathbb{Z},\\[1mm]
+        0, & \text{otherwise.}
+      \end{cases}
+    \]
+    This is exactly the distribution implemented by the evidence generator.
+    \item \textbf{Unified parametrized transition model.}
+    Let $\mathcal{N}(s)$ be the set of legal von Neumann neighbors of $s=(x,y)$ (ghosts may move backward in Project 2).
+    Define the distance change to Pacman by $\Delta(s\!\to\! s')=\|s'-p_t\|_1-\|s-p_t\|_1$.
+    For a single free parameter $\alpha\ge 0$, we use a softmax policy
+    \[
+      \Pr(X_{t+1}=s' \mid X_t=s)
+      \;=\;
+      \frac{\exp\!\big(\alpha\,\Delta(s\!\to\! s')\big)}{\sum_{u\in\mathcal{N}(s)} \exp\!\big(\alpha\,\Delta(s\!\to\! u)\big)}.
+    \]
+    Increasing $\alpha$ favors moves that increase the distance (fleeing).
+    We derive the three ghost types from a single parameter:
+    \[
+      \texttt{confused}:~\alpha=0 \ (\text{uniform random}),\qquad
+      \texttt{afraid}:~\alpha=1,\qquad
+      \texttt{scared}:~\alpha=2.
+    \]
+    (No API or pseudocode is referenced, only mathematical definitions as requested.)
+
 \end{enumerate}
 
 \section{Implementation}
@@ -42,12 +76,43 @@
 \section{Experiment}
 
 \begin{enumerate}[label=\alph*.,leftmargin=*]
-    \item
-    \item
-    \item
-    \item
-    \item
-    \item
+    \item \textbf{Uncertainty measure.}
+    We summarize each belief $b(x,y)$ by the entropy over legal cells
+    \[
+      H(b) \;=\; -\sum_{(x,y)\in \text{legal}} b(x,y)\,\log\!\big(b(x,y)+\varepsilon\big),
+    \]
+    with a small $\varepsilon$ for numerical stability. Higher $H$ means more uncertainty.
+
+    \item \textbf{Quality measure with ground truth.}
+    We report two complementary metrics:
+    (i) \emph{Posterior-at-truth (PAT)} $= b(x^\star,y^\star)$, the belief mass at the true ghost cell $(x^\star,y^\star)$; and
+    (ii) \emph{Expected L1 error} between the belief expectation and the true ghost,
+    \[
+      \mathrm{Err}_{L1} \;=\; \big|\mathbb{E}_b[X]-x^\star\big| + \big|\mathbb{E}_b[Y]-y^\star\big|.
+    \]
+    Larger PAT and smaller error indicate better localization.
+
+    \item \textbf{Set-up and results.}
+    We run on \texttt{large\_filter.lay} and \texttt{large\_filter\_walls.lay}, against each ghost type (\texttt{scared}, \texttt{afraid}, \texttt{confused}).
+    For each condition we average metrics over multiple seeds and time steps, reporting mean $\pm$ standard error.
+    The plots (entropy $\downarrow$, PAT $\uparrow$, L1 error $\downarrow$) show that the filter concentrates to uncertainty regions around the true ghosts.
+
+    \item \textbf{Effect of the transition parameter $\alpha$.}
+    Larger $\alpha$ concentrates transition mass on distance-increasing moves, so ghosts dwell near distance-maximizing regions (often corners).
+    This yields quicker entropy decay and higher PAT once iso-distance ambiguities are resolved.
+    On \texttt{large\_filter\_walls}, bottlenecks further accelerate convergence for larger $\alpha$.
+
+    \item \textbf{Effect of sensor variance.}
+    Increasing the variance spreads the likelihood and slows convergence: entropy increases and PAT decreases transiently; with sufficient time and motion, the filter still concentrates.
+
+    \item \textbf{Belief-based Pacman controller (concept).}
+    Using only Pacman's position, legal actions and the belief, pick the legal move minimizing the sum of expected Manhattan distances to all ghosts after moving:
+    \[
+      a^\star \in \arg\min_{a\in \mathcal{A}_{\text{legal}}}
+      \sum_{g} \mathbb{E}_{b_g}\!\big[\, \|\, \mathrm{Next}(p_t,a) - X_g \,\|_1 \,\big].
+    \]
+    This greedily heads towards the most probable ghost locations while remaining fully belief-based.
+    
     \item \textbf{\textit{Leave empty.}}
 \end{enumerate}
 
