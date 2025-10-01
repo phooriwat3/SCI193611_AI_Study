@@ -118,12 +118,12 @@ def assignment_3_environment_design():
     env.print_grid()
     
     agent = SimpleQLearning(
-        n_states=36, # ขนาด: 6x6
-        n_actions=4,
-        learning_rate=0.1,
-        discount=0.9,
-        epsilon=0.2
-    )
+    n_states=25,  # 5x5 = 25
+    n_actions=4,
+    learning_rate=0.1,
+    discount=0.9,
+    epsilon=0.2
+)
     
     agent.train(env, episodes=1000)
     reward, steps, _ = agent.test(env, show_path=False)
@@ -156,52 +156,160 @@ def assignment_4_advanced():
     print("4. Add experience replay")
     print("5. Create multi-goal environment")
     print("6. Implement priority sweeping")
-    """class DoubleQLearning(SimpleQLearning):
-if v > best:
-best, b_star = v, a
-target = reward + (0.0 if done else self.gamma * self.q_a[next_state][b_star])
-td = target - self.q_b[state][action]
-self.q_b[state][action] += self.lr * td
-
-
-state = next_state
-if done:
-break
-episode_rewards.append(total)
-# สร้าง q_table รวมเพื่อความเข้ากันได้ตอน test()
-self.q_table = [[self.q_a[s][a] + self.q_b[s][a] for a in range(self.n_actions)]
-for s in range(self.n_states)]
-return episode_rewards if return_rewards else None
-
-    """
-    print("\nExample: Simple SARSA Implementation")
     
-    class SARSAAgent(SimpleQLearning):
-        """SARSA Agent - On-policy learning"""
+    print("=== Topic 5: Create multi-goal environment ===")
+    print()
+
+    # --- Step 1: ออกแบบ Environment ที่มีหลายเป้าหมาย ---
+    # เราจะสร้าง Grid World ขนาด 5x5 ที่มีเป้าหมาย 2 แห่ง
+    # Goal 1: อยู่ใกล้ แต่ให้รางวัลน้อย (+20)
+    # Goal 2: อยู่ไกลกว่า และมีอุปสรรคขวาง แต่ให้รางวัลสูง (+100)
+    
+    # Import SimpleGridWorld มาเพื่อสืบทอดคุณสมบัติ
+    from simple_q_learning import SimpleGridWorld
+
+    class MultiGoalGridWorld(SimpleGridWorld):
+     """
+     Grid World หลายเป้าหมาย (รางวัลต่างกัน)
+     - G1: (2,4) +20
+     - G2: (4,4) +100
+     - สิ่งกีดขวาง: (3,2), (3,3), (3,4)
+     """
+    def __init__(self, size=5):
+        super().__init__(size=size)
+
+        # ตำแหน่งเริ่มต้น agent
+        self.start_pos = (0, 0)
+        self.agent_pos = self.start_pos
+
+        # เป้าหมายและรางวัล
+        self.goals = {
+            (2, 4): 20,   # ใกล้กว่ารางวัลน้อย
+            (4, 4): 100   # ไกลกว่าแต่รางวัลสูง
+        }
+
+        # สิ่งกีดขวาง
+        self.obstacles = [(3, 2), (3, 3), (3, 4)]
+
+        # กำหนด penalty/step reward ให้ชัดเจน (กันพลาดชื่อไม่ตรงกับคลาสฐาน)
+        self.step_penalty = -1        # รางวัลสำหรับการเดินปกติแต่ละก้าว
+        self.obstacle_penalty = -10   # ชนกำแพงโดนปรับ
+        # บาง implementation ใช้ชื่ออื่น ลองแมปให้ด้วยเผื่อไว้
+        if not hasattr(self, "move_penalty"):
+            self.move_penalty = self.step_penalty
+
+        # ปิดการใช้ goal_state เดิมของคลาสฐาน (เรามีหลาย goal)
+        self.goal_state = None
+
+    def reset(self):
+        """รีเซ็ต episode แล้วคืนค่า state เริ่มต้น"""
+        self.agent_pos = self.start_pos
+        return self.pos_to_state(self.agent_pos)
+
+    def pos_to_state(self, pos):
+        """map (row, col) -> state index [0..size*size-1]"""
+        return pos[0] * self.size + pos[1]
+
+    def step(self, action):
+        """
+        รับ action -> (next_state, reward, done)
+        0:↑ 1:↓ 2:← 3:→
+        """
+        row, col = self.agent_pos
+
+        # คำนวณตำแหน่งใหม่ตามขอบเขต
+        if action == 0:      # Up
+            row = max(0, row - 1)
+        elif action == 1:    # Down
+            row = min(self.size - 1, row + 1)
+        elif action == 2:    # Left
+            col = max(0, col - 1)
+        elif action == 3:    # Right
+            col = min(self.size - 1, col + 1)
+
+        new_pos = (row, col)
+
+        # ถ้าชนสิ่งกีดขวาง: อยู่ที่เดิม + โทษ
+        if new_pos in self.obstacles:
+            next_state = self.pos_to_state(self.agent_pos)
+            return next_state, self.obstacle_penalty, False
+
+        # อัปเดตตำแหน่ง
+        self.agent_pos = new_pos
+        next_state = self.pos_to_state(self.agent_pos)
+
+        # ถ้าไปถึงเป้าหมายใดเป้าหมายหนึ่ง -> จบ episode
+        if self.agent_pos in self.goals:
+            reward = self.goals[self.agent_pos]
+            return next_state, reward, True
+
+        # เดินปกติ
+        return next_state, self.step_penalty, False
+
+    def print_grid(self):
+        """พิมพ์กริด แสดง A/G/X/."""
+        for r in range(self.size):
+            row_str = ""
+            for c in range(self.size):
+                pos = (r, c)
+                if pos == self.agent_pos:
+                    row_str += " A "
+                elif pos in self.goals:
+                    row_str += " G "
+                elif pos in self.obstacles:
+                    row_str += " X "
+                else:
+                    row_str += " . "
+            print(row_str)
+             
         
-        def train_episode(self, env, max_steps=100):
-            state = env.reset()
-            action = self.get_action(state)  # เลือก action แรก
-            total_reward = 0
-            
-            for _ in range(max_steps):
-                next_state, reward, done = env.step(action)
-                next_action = self.get_action(next_state) if not done else 0
-                
-                # SARSA update: ใช้ actual next action แทน max
-                target = reward + self.gamma * self.q_table[next_state][next_action]
-                error = target - self.q_table[state][action]
-                self.q_table[state][action] += self.lr * error
-                
-                total_reward += reward
-                state, action = next_state, next_action
-                
-                if done:
-                    break
-            
-            return total_reward, 0
+    # --- Step 2: สร้าง Environment และ Agent ---
+    env = MultiGoalGridWorld(size=5)
+    agent = SimpleQLearning(
+        n_states=25,       # 5x5 grid
+        n_actions=4,
+        learning_rate=0.1,
+        discount=0.95,     # gamma สูงเพื่อให้มองการณ์ไกล
+        epsilon=0.1
+    )
+
+    print("Multi-Goal Grid World Setup:")
+    print("A = Agent, G = Goal, X = Obstacle")
+    print("Goal at (2, 4) gives +20 reward.")
+    print("Goal at (4, 4) gives +100 reward.")
+    env.print_grid()
+    print("-" * 20)
+
+    # --- Step 3: ฝึก Agent ---
+    # ต้องการจำนวน episode ที่มากขึ้นเพื่อให้ Agent เรียนรู้สถานการณ์ที่ซับซ้อน
+    print("Training agent in the multi-goal environment...")
+    agent.train(env, episodes=3000)
+    print("Training complete.")
+
+    # --- Step 4: ทดสอบและวิเคราะห์ผล ---
+    print("\nTesting trained agent:")
+    # เราจะเริ่ม agent ที่ (0,0) เพื่อดูว่ามันเลือกเส้นทางไหน
+    env.agent_pos = (0,0) 
+    reward, steps, path = agent.test(env, show_path=True)
     
-    print("SARSA vs Q-Learning comparison example implemented above.")
+    print(f"\nPath taken: {path}")
+    print(f"Total reward: {reward}")
+    print(f"Steps taken: {steps}")
+
+    print("\n--- Analysis for Multi-Goal Environment ---")
+    print("1. ผลลัพธ์ที่คาดหวังคืออะไร?")
+    print("   - Agent ควรจะเรียนรู้ที่จะเพิกเฉยต่อเป้าหมายที่ให้รางวัลน้อย (+20) แม้จะอยู่ใกล้กว่า")
+    print("   - และควรเลือกเดินทางอ้อมอุปสรรคเพื่อไปยังเป้าหมายที่ให้รางวัลสูงสุด (+100) แทน")
+    print("\n2. ทำไม Agent ถึงเลือกเส้นทางนั้น?")
+    print("   - เพราะ Q-Learning มี Discount Factor (gamma) ซึ่งทำให้รางวัลในอนาคตมีค่า")
+    print("   - แม้ว่าการเดินทางไปเป้าหมายไกลจะใช้หลาย step (โดน step_penalty หลายครั้ง) แต่รางวัลตอนท้าย (+100) เมื่อถูกคิดลดทอนกลับมาแล้ว ก็ยังคงมีค่า (Value) สูงกว่าเส้นทางที่ไปสู่รางวัล +20")
+    print("   - Agent จึงไม่ได้เลือกทางที่ให้รางวัลทันที แต่เลือกทางที่ให้ 'ผลตอบแทนรวมสูงสุดในระยะยาว' (Maximum Expected Future Reward)")
+    print("\n3. ผลการทดลองสอดคล้องกับที่คาดหวังหรือไม่?")
+    if reward > 50:
+         print("   - 'ใช่' Agent ได้รางวัลสูง แสดงว่ามันเลือกไปที่เป้าหมาย +100 สำเร็จ ซึ่งพิสูจน์ว่ามันสามารถตัดสินใจเลือกเป้าหมายที่ให้ผลตอบแทนดีที่สุดได้")
+    else:
+         print("   - 'อาจจะไม่' Agent ได้รางวัลน้อย แสดงว่ามันอาจจะยังเรียนรู้ไม่ดีพอ หรือติดอยู่ที่เป้าหมายแรก อาจต้องเพิ่มจำนวน episodes ในการฝึก หรือปรับ learning rate/epsilon")
+
 
 def bonus_visualization():
     """
@@ -214,86 +322,68 @@ def bonus_visualization():
     # TODO: ใช้ matplotlib สร้างกราฟ learning curve
     # TODO: สร้าง animation ของการเรียนรู้
     # TODO: แสดง heatmap ของ Q-values
-    """ try:
-import matplotlib.pyplot as plt
-import numpy as np
-has_mpl = True
-except Exception:
-has_mpl = False
+    import math
+    print("=== Bonus: Enhanced Visualization ===\n")
 
+    # ฝึกสั้น ๆ เพื่อให้มี Q-table ใช้งาน
+    env = SimpleGridWorld(size=5)
+    agent = SimpleQLearning(n_states=25, n_actions=4, learning_rate=0.1, discount=0.9, epsilon=0.2)
+    rewards = agent.train(env, episodes=400)
 
-# สร้าง/ฝึกโมเดลสั้น ๆ เพื่อดึง Q-table มาแสดง
-env = SimpleGridWorld(size=5)
-agent = SimpleQLearning(n_states=25, n_actions=4, learning_rate=0.1, discount=0.9, epsilon=0.2)
-rewards = agent.train(env, episodes=400) # ถ้า train() ไม่คืน rewards ก็จะเป็น None
+    # 1) Learning curve
+    try:
+        import matplotlib.pyplot as plt
+        if rewards is not None:
+            plt.figure(figsize=(9, 4))
+            plt.plot(rewards)
+            plt.title('Learning Curve (Total Reward per Episode)')
+            plt.xlabel('Episode')
+            plt.ylabel('Total Reward')
+            plt.grid(True)
+            plt.tight_layout()
+            plt.show()
+        else:
+            print("(train() ไม่คืน rewards — ข้ามกราฟ learning curve)")
+    except Exception:
+        print("(ไม่มี matplotlib — ข้ามกราฟ learning curve)")
 
+    # 2) Heatmap ของค่า V(s) = max_a Q(s,a)
+    q = agent.q_table
+    v = [max(row) for row in q]
+    size = int(math.sqrt(len(v)))
+    try:
+        import matplotlib.pyplot as plt
+        data = [[v[r*size+c] for c in range(size)] for r in range(size)]
+        plt.figure(figsize=(4.5, 4))
+        plt.imshow(data, interpolation='nearest')
+        plt.title('State Value Heatmap (max Q)')
+        plt.colorbar(label='Value')
+        plt.xticks(range(size))
+        plt.yticks(range(size))
+        plt.tight_layout()
+        plt.show()
+    except Exception:
+        print("ASCII Heatmap (approx.):")
+        chars = " .:-=+*#%@"
+        mx, mn = max(v), min(v)
+        span = (mx - mn) if mx != mn else 1.0
+        for r in range(size):
+            row = ''
+            for c in range(size):
+                val = v[r*size+c]
+                idx = int((val - mn) / span * (len(chars) - 1))
+                row += chars[idx]
+            print(row)
 
-# 1) Learning curve
-if has_mpl and rewards is not None:
-plt.figure(figsize=(9, 4))
-plt.plot(rewards)
-plt.title('Learning Curve (Total Reward per Episode)')
-plt.xlabel('Episode')
-plt.ylabel('Total Reward')
-plt.grid(True)
-plt.tight_layout()
-try:
-plt.show()
-except Exception:
-print("(แสดงกราฟไม่สำเร็จบนสภาพแวดล้อมนี้)")
-else:
-print("(ไม่มี matplotlib หรือ train() ไม่คืน rewards — ข้ามกราฟ learning curve)")
+    # 3) Policy visualization
+    arrows = {0: '↑', 1: '↓', 2: '←', 3: '→'}
+    policy = [max(range(4), key=lambda a: agent.q_table[s][a]) for s in range(agent.n_states)]
+    print("\nPolicy (greedy argmax Q):")
+    for r in range(size):
+        line = ' '.join(arrows[policy[r*size + c]] for c in range(size))
+        print(line)
 
-
-# 2) Heatmap ของค่า V(s) = max_a Q(s,a)
-q = agent.q_table
-v = [max(row) for row in q]
-size = int(math.sqrt(len(v)))
-if has_mpl:
-data = [[v[r*size+c] for c in range(size)] for r in range(size)]
-plt.figure(figsize=(4.5, 4))
-plt.imshow(data, interpolation='nearest')
-plt.title('State Value Heatmap (max Q)')
-plt.colorbar(label='Value')
-plt.xticks(range(size))
-plt.yticks(range(size))
-plt.tight_layout()
-try:
-plt.show()
-except Exception:
-print("(แสดง heatmap ไม่สำเร็จบนสภาพแวดล้อมนี้)")
-else:
-print("ASCII Heatmap (approx.):")
-chars = " .:-=+*#%@"
-mx, mn = max(v), min(v)
-span = (mx - mn) if mx != mn else 1.0
-for r in range(size):
-row = ''
-for c in range(size):
-val = v[r*size+c]
-idx = int((val - mn) / span * (len(chars) - 1))
-row += chars[idx]
-print(row)"""
-    print("Ideas for enhanced visualization:")
-    print("1. Plot learning curves with matplotlib")
-    print("2. Create heatmap of Q-values")
-    print("3. Animate the learning process")
-    print("4. Show value function as 3D surface")
-    print("5. Create policy visualization with arrows")
-    
-    print("\nSample code for learning curve:")
-    print("""
-import matplotlib.pyplot as plt
-
-def plot_learning_curve(episode_rewards):
-    plt.figure(figsize=(10, 6))
-    plt.plot(episode_rewards)
-    plt.title('Q-Learning Performance')
-    plt.xlabel('Episode')
-    plt.ylabel('Total Reward')
-    plt.grid(True)
-    plt.show()
-    """)
+    print("\n(เสร็จสิ้น Bonus Visualization)")
 
 def main():
     """เลือก assignment ที่จะทำ"""
