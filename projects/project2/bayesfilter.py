@@ -38,7 +38,9 @@ class BeliefStateAgent(Agent):
         # เลือก n ให้สอดคล้องกับ variance ของ Binomial: Var = n p (1-p) = n * 0.5 * 0.5
         # => n = variance / (p*(1-p))
         self.n = int(self.sensor_variance/(self.p*(1-self.p)))
-
+         
+        self.layout_name = getattr(self.args, "layout", "unknown")
+        self.runid = getattr(self.args, "seed", -1)
         # XXX: Your code here
     def _shape(self):
         # ขนาดกระดาน (กว้าง, สูง)
@@ -316,8 +318,34 @@ class BeliefStateAgent(Agent):
 
         N.B. : [0,0] is the bottom left corner of the maze
         """
-        pass
+        import csv, os
+        if not hasattr(self, "_t"): self._t = 0
 
+        os.makedirs("results", exist_ok=True)
+        fpath = f"results/metrics_{self.ghost_type}.csv"
+        newfile = not os.path.exists(fpath)
+    
+        true_positions = state.getGhostPositions()
+    
+        with open(fpath, "a", newline="") as f:
+            w = csv.writer(f)
+            if newfile:
+                w.writerow(["runid","t","ghost_idx","entropy","pat","expected_L1",
+                            "layout","ghost_type","sensor_var"])
+            for gi, B in enumerate(belief_states):
+                flat = B.flatten()
+                entropy = float(-np.sum(flat[flat>0] * np.log(flat[flat>0] + 1e-12)))
+                tx, ty = true_positions[gi]
+                tx, ty = int(round(tx)), int(round(ty))
+                pat = float(B[tx, ty]) if (0 <= tx < B.shape[0] and 0 <= ty < B.shape[1]) else 0.0
+                W, H = B.shape
+                xs = np.arange(W)[:, None]
+                ys = np.arange(H)[None, :]
+                exp_L1 = float(np.sum(B * (np.abs(xs - tx) + np.abs(ys - ty))))
+                w.writerow([self.runid, self._t, gi, entropy, pat, exp_L1,
+                            self.layout_name, self.ghost_type, self.sensor_variance])
+        self._t += 1
+    
     def get_action(self, state):
         """
         Given a pacman game state, returns a belief state.
