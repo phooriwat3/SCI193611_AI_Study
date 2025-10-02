@@ -1,10 +1,11 @@
 from pacman_module.game import Agent, Directions
 
 class PacmanAgent(Agent):
-    def __init__(self, depth=2):
+    def __init__(self, depth=5):
         super().__init__()
         self.depth = depth
         self.expanded_nodes = 0
+        self.last = Directions.STOP  # จำทิศล่าสุดไว้กัน oscillation
         
     def get_action(self, gameState):
         # เรียกใช้ minimax และ return action
@@ -30,11 +31,11 @@ class PacmanAgent(Agent):
         if not successors:
             return self.evaluation_function(state)
             
-        best_score = float('inf')
-        for successor, action in successors:
-            score = self.minimax(successor, next_depth, next_agent)
-            best_score = min(best_score, score)
-        return best_score
+        v = float("inf")
+        for succ, action in successors:
+            score = self.minimax(succ, next_depth, next_agent)
+            v = min(v, score)
+        return v
     
     def max_value(self, state, depth):
         # นับ node expansion ที่นี่
@@ -44,33 +45,67 @@ class PacmanAgent(Agent):
         if state.isWin() or state.isLose() or depth == 0:
             return self.evaluation_function(state)
         
-        best_score = float('-inf')
-        for action in state.getLegalActions(0):  # Pacman is agent 0
-            if action == Directions.STOP:
-                continue
-            successor = state.generateSuccessor(0, action)
-            score = self.min_value(successor, depth, 1)  # Ghost starts at index 1
-            best_score = max(best_score, score)
-        return best_score
+        v = float("-inf") 
+        successors = state.generatePacmanSuccessors()
+        if not successors:
+            return self.evaluation_function(state)
+        
+        # จัดลำดับแบบเดียวกับ root เพื่อเสริมความเสถียรในต้นไม้
+        successors.sort(key=lambda sa: sa[0].getScore(), reverse=True)
+        
+        for succ, action in successors:
+            score = self.min_value(succ, depth, 1)
+            v = max(v, score)
+        return v
+
     
     def minimax(self, state, depth, agent_index):
         if agent_index == 0:  # Pacman's turn (MAX)
             if depth == self.depth:  # Root level - return action
-                best_score = float('-inf')
+                best_score = float("-inf")
                 best_action = Directions.STOP
-                for action in state.getLegalActions(0):
-                    if action == Directions.STOP:
+
+                # ใช้ generatePacmanSuccessors เพื่อให้ engine นับ expanded ได้ + เอา "คะแนนจริงของ successor" มาเป็นตัวจัดลำดับ
+                successors = state.generatePacmanSuccessors()
+                if not successors:
+                    return Directions.STOP
+            
+                # จัดลำดับ: เอาสถานะที่ "ได้คะแนนมากกว่า" (เช่น กินเม็ดได้ทันที) มาก่อน
+                successors.sort(key=lambda sa: sa[0].getScore(), reverse=True)
+            
+                for succ, action in successors:
+                    score = self.min_value(succ, depth, 1)
+            
+                    # 1) เกณฑ์หลัก: เอาคะแนนมากสุด
+                    take = score > best_score
+            
+                    # 2) tie-break: คะแนนเท่ากัน → ชอบ "คงทิศเดิม" มากกว่า
+                    if score == best_score and action == self.last:
+                        take = True
+            
+                    # 3) tie-break เพิ่มเติม: คะแนนเท่ากัน → เลี่ยง "ย้อนทิศ" ถ้ามีตัวเลือกอื่น
+                    if score == best_score and action == self._reverse_of(self.last):
+                        # ถ้าเจอทางอื่นเท่ากันที่ไม่ย้อน ให้ข้ามอันนี้
                         continue
-                    successor = state.generateSuccessor(0, action)
-                    score = self.min_value(successor, depth, 1)
-                    if score > best_score:
-                        best_score = score
-                        best_action = action
+            
+                    if take:
+                        best_score, best_action = score, action
+            
+                self.last = best_action
                 return best_action
+
             else:
                 return self.max_value(state, depth)
-        else:  # Ghost's turn (MIN)
+        else:
             return self.min_value(state, depth, agent_index)
+    
+    def _reverse_of(self, a):
+        rev = {Directions.NORTH: Directions.SOUTH,
+           Directions.SOUTH: Directions.NORTH,
+           Directions.EAST:  Directions.WEST,
+           Directions.WEST:  Directions.EAST}
+        return rev.get(a, Directions.STOP)
+
     
     def evaluation_function(self, state):
         return state.getScore()
